@@ -1,0 +1,83 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fithub_user/services/chat_room_screen.dart';
+
+class CustomerChatListScreen extends StatelessWidget {
+  final String customerId;
+
+  const CustomerChatListScreen({super.key, required this.customerId});
+
+  Future<String> _getTrainerName(String uid) async {
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    if (doc.exists) {
+      final data = doc.data();
+      return "${data?['firstName'] ?? ''} ${data?['lastName'] ?? ''}".trim();
+    }
+    return 'Unknown Trainer';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Messages")),
+      body: StreamBuilder<QuerySnapshot>(
+        stream:
+            FirebaseFirestore.instance
+                .collection('chats')
+                .where('participants', arrayContains: customerId)
+                .orderBy('lastTimestamp', descending: true)
+                .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData)
+            return Center(child: CircularProgressIndicator());
+
+          final chats = snapshot.data!.docs;
+          if (chats.isEmpty) return Center(child: Text("No messages yet"));
+
+          return ListView.builder(
+            itemCount: chats.length,
+            itemBuilder: (context, index) {
+              final chat = chats[index];
+              final data = chat.data() as Map<String, dynamic>;
+              final chatId = chat.id;
+              final lastMessage = data['lastMessage'] ?? '';
+              final timestamp = (data['lastTimestamp'] as Timestamp).toDate();
+              final receiverId = (data['participants'] as List).firstWhere(
+                (id) => id != customerId,
+                orElse: () => 'Unknown',
+              );
+
+              return FutureBuilder<String>(
+                future: _getTrainerName(receiverId),
+                builder: (context, nameSnapshot) {
+                  final trainerName = nameSnapshot.data ?? receiverId;
+                  return ListTile(
+                    title: Text("Trainer: $trainerName"),
+                    subtitle: Text(lastMessage),
+                    trailing: Text(
+                      TimeOfDay.fromDateTime(timestamp).format(context),
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => ChatRoomScreen(
+                                customerId: customerId,
+                                trainerId: receiverId,
+                              ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "767022468690",
+    "project_id": "fithub-90c89",
+    "storage_bucket": "fithub-90c89.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:767022468690:android:1cdf4b76108d3ff832598b",
+        "android_client_info": {
+          "package_name": "com.example.fithub_user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIiUQYvSHEGikVePLJG_JBpLb1Jr_9ei8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
